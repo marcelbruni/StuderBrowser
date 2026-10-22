@@ -1,0 +1,100 @@
+<Window x:Class="StuderBrowser.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:StuderBrowser"
+        Title="StuderBrowser" Width="1400" Height="900" WindowState="Maximized"
+        Background="{StaticResource ChromeBackground}" PreviewKeyDown="OnPreviewKeyDown"
+        StateChanged="OnWindowStateChanged">
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="40" ResizeBorderThickness="6" GlassFrameThickness="0,0,0,1" CornerRadius="0"
+                      UseAeroCaptionButtons="False" />
+    </WindowChrome.WindowChrome>
+    <Grid x:Name="RootGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <DockPanel x:Name="TabBar" Grid.Row="0" Margin="8,6,0,0" LastChildFill="False">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Top" Margin="0,-6,0,0"
+                        WindowChrome.IsHitTestVisibleInChrome="True">
+                <Button Style="{StaticResource CaptionButton}" Content="&#xE921;" ToolTip="Minimieren"
+                        Click="OnMinimizeClicked" />
+                <Button x:Name="MaximizeButton" Style="{StaticResource CaptionButton}" Content="&#xE922;"
+                        ToolTip="Maximieren" Click="OnMaximizeClicked" />
+                <Button Style="{StaticResource CloseCaptionButton}" Content="&#xE8BB;" ToolTip="Schliessen"
+                        Click="OnCloseWindowClicked" />
+            </StackPanel>
+            <ItemsControl x:Name="TabStrip" DockPanel.Dock="Left" WindowChrome.IsHitTestVisibleInChrome="True">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type local:BrowserTab}">
+                        <Border x:Name="TabBorder" Width="220" Height="34" Padding="10,0,4,0" CornerRadius="8,8,0,0"
+                                Background="Transparent" Cursor="Hand" ToolTip="{Binding Title}"
+                                MouseLeftButtonDown="OnTabMouseLeftButtonDown" MouseMove="OnTabMouseMove"
+                                MouseUp="OnTabMouseUp">
+                            <DockPanel>
+                                <Image DockPanel.Dock="Left" Width="16" Height="16" Margin="0,0,8,0"
+                                       Source="{Binding Favicon}" />
+                                <Button DockPanel.Dock="Right" Style="{StaticResource NavButton}" Width="22" Height="22"
+                                        FontSize="9" Content="&#xE711;" ToolTip="Tab schliessen (Ctrl+W)"
+                                        Click="OnCloseTabClicked" />
+                                <TextBlock VerticalAlignment="Center" Text="{Binding Title}" TextTrimming="CharacterEllipsis"
+                                           FontSize="12" Foreground="{StaticResource Foreground}" />
+                            </DockPanel>
+                        </Border>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="{StaticResource ToolbarBackground}" />
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Button DockPanel.Dock="Left" Style="{StaticResource NavButton}" Margin="4,0,0,0" Content="&#xE710;"
+                    ToolTip="Neuer Tab (Ctrl+T)" Click="OnNewTabClicked" WindowChrome.IsHitTestVisibleInChrome="True" />
+        </DockPanel>
+
+        <DockPanel Grid.Row="1" Background="{StaticResource ToolbarBackground}" Height="44" LastChildFill="True">
+            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Margin="6,0">
+                <Button x:Name="BackButton" Style="{StaticResource NavButton}" Content="&#xE72B;" ToolTip="Zurück (Alt+Links)"
+                        Click="OnBackClicked" />
+                <Button x:Name="ForwardButton" Style="{StaticResource NavButton}" Content="&#xE72A;" ToolTip="Vorwärts (Alt+Rechts)"
+                        Click="OnForwardClicked" />
+                <Button x:Name="ReloadButton" Style="{StaticResource NavButton}" Content="&#xE72C;" ToolTip="Neu laden (F5)"
+                        Click="OnReloadClicked" />
+                <Button Style="{StaticResource NavButton}" Content="&#xE80F;" ToolTip="Startseite" Click="OnHomeClicked" />
+            </StackPanel>
+            <Button x:Name="UpdateButton" DockPanel.Dock="Right" Style="{StaticResource UpdateButton}" Margin="0,0,8,0"
+                    Visibility="Collapsed" Click="OnUpdateClicked">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE895;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" VerticalAlignment="Center"
+                               Margin="0,0,6,0" />
+                    <TextBlock Text="Aktualisieren" VerticalAlignment="Center" />
+                </StackPanel>
+            </Button>
+            <Button x:Name="BookmarkToggleButton" DockPanel.Dock="Right" Style="{StaticResource NavButton}" Margin="0,0,4,0"
+                    Content="&#xE734;" ToolTip="Lesezeichen setzen (Ctrl+D)" Click="OnToggleBookmarkClicked" />
+            <Border Background="{StaticResource AddressBackground}" CornerRadius="16" Height="32" Margin="4,0,4,0">
+                <TextBox x:Name="AddressBar" Background="Transparent" BorderThickness="0" Margin="14,0"
+                         VerticalContentAlignment="Center" FontSize="14" Foreground="{StaticResource Foreground}"
+                         KeyDown="OnAddressBarKeyDown" GotKeyboardFocus="OnAddressBarFocused"
+                         PreviewMouseLeftButtonDown="OnAddressBarMouseDown" />
+            </Border>
+        </DockPanel>
+
+        <Border Grid.Row="2" Background="{StaticResource ToolbarBackground}" BorderBrush="{StaticResource ChromeBackground}"
+                BorderThickness="0,0,0,1" Padding="8,0,8,4" AllowDrop="True" DragOver="OnBookmarkBarDragOver"
+                DragLeave="OnBookmarkBarDragLeave" Drop="OnBookmarkBarDrop">
+            <WrapPanel x:Name="BookmarkBar" Orientation="Horizontal" />
+        </Border>
+
+        <Grid x:Name="WebViewHost" Grid.Row="3" Background="White" />
+    </Grid>
+</Window>
